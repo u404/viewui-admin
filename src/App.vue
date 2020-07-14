@@ -1,14 +1,14 @@
 <template>
-  <Main></Main>
+  <router-view></router-view>
 </template>
 
 <script>
-import Main from './layouts/Main'
+// import Main from './layouts/Main'
 
 export default {
   name: 'app',
   components: {
-    Main
+
   }
 }
 </script>

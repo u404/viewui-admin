@@ -2,49 +2,32 @@
   <div class="layout">
     <Layout :style="{ minHeight: '100vh' }">
       <Sider>
-        <Menu theme="dark" width="auto" active-name="1-2" :open-names="['1']">
-          <Submenu name="1">
-            <template slot="title">
-              <Icon type="ios-analytics" />
-              Navigation One
-            </template>
-            <MenuItem name="1-1">Option 1</MenuItem>
-            <MenuItem name="1-2">Option 2</MenuItem>
-            <MenuItem name="1-3">Option 3</MenuItem>
-            <MenuItem name="1-4">Option 4</MenuItem>
-          </Submenu>
-          <Submenu name="2">
-            <template slot="title">
-              <Icon type="ios-filing" />
-              Navigation Two
-            </template>
-            <MenuItem name="2-1">Option 5</MenuItem>
-            <MenuItem name="2-2">Option 6</MenuItem>
-            <Submenu name="3">
-              <template slot="title">Submenu</template>
-              <MenuItem name="3-1">Option 7</MenuItem>
-              <MenuItem name="3-2">Option 8</MenuItem>
-            </Submenu>
-          </Submenu>
-          <Submenu name="4">
-            <template slot="title">
-              <Icon type="ios-cog" />
-              Navigation Three
-            </template>
-            <MenuItem name="4-1">Option 9</MenuItem>
-            <MenuItem name="4-2">Option 10</MenuItem>
-            <MenuItem name="4-3">Option 11</MenuItem>
-            <MenuItem name="4-4">Option 12</MenuItem>
-          </Submenu>
+        <Menu theme="dark" width="auto" :active-name="$route.path" :open-names="openNames">
+          <MenuRender :menu="m" v-for="(m,i) in menuRoutes" :key="i"></MenuRender>
         </Menu>
       </Sider>
       <Layout>
-        <Header></Header>
+        <Header theme="light">
+          <div class="header-layout">
+            <div class="header-layout-content"></div>
+            <div class="header-layout-content">
+              <Dropdown @on-click="handleUserMenuClick">
+                <Avatar class="user-avator" v-if="user && user.avator" src="https://i.loli.net/2017/08/21/599a521472424.jpg" />
+                <Avatar class="user-avator" v-else style="background-color: #87d068" icon="ios-person" />
+                <DropdownMenu slot="list">
+                  <DropdownItem>用户信息</DropdownItem>
+                  <DropdownItem>系统设置</DropdownItem>
+                  <DropdownItem divided name="logout">退出</DropdownItem>
+                </DropdownMenu>
+              </Dropdown>
+            </div>
+          </div>
+        </Header>
         <Content :style="{ padding: '16px' }">
           <Breadcrumb :style="{ margin: '0 0 16px' }">
             <BreadcrumbItem>Home</BreadcrumbItem>
             <BreadcrumbItem>Components</BreadcrumbItem>
-            <BreadcrumbItem>Layout</BreadcrumbItem>
+            <BreadcrumbItem>{{openNames}}</BreadcrumbItem>
           </Breadcrumb>
           <Card>
             <router-view class="view"></router-view>
@@ -55,13 +38,42 @@
   </div>
 </template>
 <script>
+import { mapState, mapMutations } from 'vuex'
+import { menuRoutes } from '@/router'
+import MenuRender from './MenuRender'
 export default {
+  components: {
+    MenuRender
+  },
   data () {
     return {
     }
   },
   computed: {
-
+    ...mapState(['user']),
+    menuRoutes () {
+      return menuRoutes
+    },
+    openNames () {
+      return this.$route.path.split('/').reduce((res, item) => {
+        if (item) {
+          const lastItem = (res.length && res[res.length - 1]) || ''
+          res.push(`${lastItem}/${item}`)
+        }
+        return res
+      }, [])
+    }
+  },
+  methods: {
+    ...mapMutations(['setState']),
+    handleUserMenuClick (key) {
+      key && this[key]()
+    },
+    logout () {
+      console.log('logout')
+      this.setState({ user: null })
+      this.$router.replace('/login')
+    }
   }
 }
 </script>
@@ -72,6 +84,12 @@ export default {
   &:hover {
     box-shadow: 0 1px 6px rgba(0, 0, 0, 0.2);
     border-color: #eee;
+  }
+}
+.header-layout {
+  @include flex;
+  .user-avator {
+    cursor: pointer;
   }
 }
 </style>
